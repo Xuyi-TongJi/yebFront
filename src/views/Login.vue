@@ -65,9 +65,10 @@ export default {
         if (valid) {
           // 校验通过，提交表单(axios)
           postRequest('/login', this.loginForm).then(res => {
-            if (res) {
+            if (res.data.status === 200) {
               // replace和push的区别： replace替换，不可通过后退按钮退回；push可以
               this.$router.replace("/home");
+              // 将token存入Vuex
             }
           })
         } else {
