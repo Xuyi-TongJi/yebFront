@@ -43,6 +43,7 @@ axios.interceptors.response.use(
 
 let base = '';
 
+// 封装post请求
 export const postRequest = (url, params) => {
     return axios({
             method: 'post',

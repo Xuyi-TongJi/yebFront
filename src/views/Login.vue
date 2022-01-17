@@ -11,7 +11,7 @@
       <el-form-item prop="code">
         <el-input type="text" auto-complete="false" v-model="loginForm.code" placeholder="点击图片更换验证码"
                   style="width: 250px;margin-right: 5px"></el-input>
-        <img :src="captchaUrl">
+        <img :src="captchaUrl" @click="updateCaptcha">
       </el-form-item>
       <el-form-item>
         <el-checkbox v-model="checked" class="loginRemember">记住我</el-checkbox>
@@ -22,11 +22,13 @@
 </template>
 
 <script>
+import {postRequest} from "@/utils/api";
+
 export default {
   name: "Login",
   data() {
     return {
-      captchaUrl: '',
+      captchaUrl: '/captcha?time=' + new Date(),
       // 表单数据
       loginForm: {
         username: 'admin',
@@ -55,11 +57,19 @@ export default {
     }
   },
   methods: {
+    updateCaptcha() {
+      this.captchaUrl = '/captcha?time=' + new Date();
+    },
     submitLogin() {
       this.$refs['loginForm'].validate((valid) => {
         if (valid) {
           // 校验通过，提交表单(axios)
-          alert("登录成功！");
+          postRequest('/login', this.loginForm).then(res => {
+            if (res) {
+              // replace和push的区别： replace替换，不可通过后退按钮退回；push可以
+              this.$router.replace("/home");
+            }
+          })
         } else {
           this.$message.error("请输入所有字段!");
           return false;
@@ -95,5 +105,9 @@ export default {
 .loginButton {
   text-align: center;
   margin-left: 140px;
+}
+.el-form-item__content {
+  display: flex;
+  align-items: center;
 }
 </style>
