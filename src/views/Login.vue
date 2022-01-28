@@ -1,6 +1,8 @@
 <template>
   <div>
-    <el-form :rules="rules" ref="loginForm" :model="loginForm" class="loginContainer">
+    <el-form :rules="rules" ref="loginForm" :model="loginForm" class="loginContainer"
+              v-loading="loading" element-loading-text="正在登录" element-loading-spinner="el-icon-loading"
+              element-loading-background="rgba(0, 0, 0, 0.8)">
       <h3 class="loginTitle">系统登录</h3>
       <el-form-item prop="username"> <!-- 对应校验规则 -->
         <el-input type="text" auto-complete="false" v-model="loginForm.username" placeholder="请输入用户名"></el-input>
@@ -22,8 +24,6 @@
 </template>
 
 <script>
-import {postRequest} from "@/utils/api";
-
 export default {
   name: "Login",
   data() {
@@ -35,6 +35,7 @@ export default {
         password: '123',
         code: ''
       },
+      loading: false,
       checked: true,
       // 校验规则
       rules: {
@@ -63,12 +64,16 @@ export default {
     submitLogin() {
       this.$refs['loginForm'].validate((valid) => {
         if (valid) {
+          this.loading = true;
           // 校验通过，提交表单(axios)
-          postRequest('/login', this.loginForm).then(res => {
+          this.postRequest('/login', this.loginForm).then(res => {
+            this.loading = false;
             if (res.data.status === 200) {
+              // 将tokenStr存入SessionStorage
+              const tokenStr = res.data.obj.tokenHead + ' ' + res.data.obj.token;
+              this.$store.commit("setTokenStr", tokenStr);
               // replace和push的区别： replace替换，不可通过后退按钮退回；push可以
-              this.$router.replace("/home");
-              // 将token存入Vuex
+              this.$router.replace('/hello');
             }
           })
         } else {

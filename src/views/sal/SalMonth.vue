@@ -1,10 +1,12 @@
 <template>
-  <div>Test1</div>
+  <div>
+    月末处理
+  </div>
 </template>
 
 <script>
 export default {
-  name: "Test1"
+  name: "SalMonth"
 }
 </script>
 

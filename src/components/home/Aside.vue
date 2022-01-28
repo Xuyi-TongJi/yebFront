@@ -1,10 +1,10 @@
 <template>
 <div>
-  <el-menu router>
+  <el-menu router unique-opened>
     <!-- 循环routes 动态显示导航栏 -->
-    <el-submenu index="1" v-for="(item, index) in businessComponent" :key="index">
+    <el-submenu :index="index + ''" v-for="(item, index) in routes" :key="index">
         <template slot="title">
-          <i class="el-icon-location">{{item.name}}</i>
+          <i :class="item.iconCls" id="item-icon">{{item.name}}</i>
         </template>
         <el-menu-item :index="children.path" v-for="(children, i) in item.children" :key="i">
           {{children.name}}
@@ -18,15 +18,17 @@
 export default {
   name: "Aside",
   computed: {
-    businessComponent: function() {
-      return this.$router.options.routes.filter(function (router) {
-        return !router.hidden;
-      });
+    // 获取存储在Vuex重的路由列表
+    routes() {
+      return this.$store.state.routes;
     }
   }
 }
 </script>
 
 <style scoped>
-
+  #item-icon{
+    color: #1accff;
+    margin-right: 5px;
+  }
 </style>
