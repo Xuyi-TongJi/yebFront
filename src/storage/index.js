@@ -10,9 +10,14 @@ export default new Vuex.Store({
     },
     // 同步执行
     mutations: {
+        // 菜单路由信息配置
         initRoutes(state, data) {
             state.routes = data;
         },
+        clearRoutes(state) {
+            state.routes = [];
+        },
+        // Token字符串信息配置
         setTokenStr(state, tokenStr) {
             state.tokenStr = tokenStr;
             sessionStorage.setItem("tokenStr", tokenStr);

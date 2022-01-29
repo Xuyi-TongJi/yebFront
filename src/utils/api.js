@@ -57,7 +57,7 @@ axios.interceptors.response.use(
                 Message.error({message: "未知错误"});
             }
         }
-        return Promise.reject(error.response.data.message);
+        return error;
     })
 
 let base = '';
@@ -85,7 +85,7 @@ export const deleteRequest = (url, params) => {
 // 封装put请求
 export const putRequest = (url, params) => {
     return axios({
-            methods: 'put',
+            method: 'put',
             url: base + url,
             data: params
         }
@@ -95,7 +95,7 @@ export const putRequest = (url, params) => {
 // 封装get请求
 export const getRequest = (url, params) => {
     return axios({
-            methods: 'get',
+            method: 'get',
             url: base + url,
             data: params
         }

@@ -4,7 +4,8 @@
     <!-- 下拉菜单 -->
     <el-dropdown class="userInfo" @command="commandHandler">
       <span class="el-dropdown-link">
-        {{ user.name }}<i><img :src="userFace"/></i>
+        {{ user.name }}
+        <i><img :src="userFace"/></i>
       </span>
       <el-dropdown-menu slot="dropdown">
         <el-dropdown-item command="personalCenter">个人中心</el-dropdown-item>
@@ -34,19 +35,28 @@ export default {
         responseType: 'blob'
         }
       ).then(res => {
-        if (res.data) {
+        if (res.status === 200 && res.data != null) {
           this.userFace = URL.createObjectURL(res.data);
         }
       })
     },
     commandHandler(command) {
       if (command === 'logout') {
-        this.postRequest('/logout').then(res => {
-          if (res.data.obj.status === 200) {
-            sessionStorage.removeItem("tokenStr");
-            sessionStorage.removeItem("user");
-            this.$router.replace("/");
-          }
+        this.$confirm('是否注销登录?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'info'
+        }).then(() => {
+          this.postRequest('/logout').then(res => {
+            if (res.data.status === 200) {
+              // 清空vuex中的菜单
+              this.$store.commit("clearRoutes");
+              // 清空用户数据
+              this.$store.commit("clearTokenStr");
+              sessionStorage.removeItem("user");
+              this.$router.replace("/");
+            }
+          })
         })
       } else if (command === 'settings') {
         return;
@@ -55,9 +65,9 @@ export default {
       }
     }
   },
-  created() {
+ mounted() {
     this.getUserFace();
-  }
+ }
 }
 </script>
 
@@ -75,6 +85,7 @@ export default {
   font-size: 30px;
   font-family: 华文楷体;
   color: white;
+
 }
 
 .home-header .userInfo {
@@ -85,5 +96,9 @@ export default {
   width: 48px;
   height: 48px;
   border-radius: 24px;
+}
+
+.home-header .userInfo .el-dropdown-link .user-name{
+  margin-top: 20px;
 }
 </style>

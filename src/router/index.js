@@ -13,14 +13,12 @@ const routes = [
     },
     {
         path: '/hello',
-        name: 'Home',
+        name: '首页',
         component: Home
     }
 ]
 
 const router = new VueRouter({
-        mode: 'history',
-        base: process.env.BASE_URL,
         routes
     }
 )
