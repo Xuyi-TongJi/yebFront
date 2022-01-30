@@ -6,7 +6,8 @@ Vue.use(Vuex)
 export default new Vuex.Store({
     state: {
         routes: [],
-        tokenStr: ''
+        tokenStr: '',
+        levelTitleList: []
     },
     // 同步执行
     mutations: {
@@ -25,6 +26,14 @@ export default new Vuex.Store({
         clearTokenStr(state) {
             state.tokenStr = '';
             sessionStorage.removeItem("tokenStr");
+        },
+        setLevelTitleList(state, list) {
+            if (list instanceof Array) {
+                state.levelTitleList = list;
+            }
+        },
+        clearLevelTitleList(state) {
+            state.levelTitleList = [];
         }
     },
     // 异步执行

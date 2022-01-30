@@ -22,7 +22,6 @@
         ref="multipleTable"
         :data="tableData"
         style="width: 100%"
-        :row-class-name="tableRowClassName"
         @selection-change="handleSelectionChange">
         <el-table-column
           type="selection"
@@ -30,18 +29,18 @@
         </el-table-column>
         <el-table-column
           prop="index"
-          label="序号"
+          label="编号"
           width="180">
         </el-table-column>
         <el-table-column
           prop="name"
           label="职位名称"
-          width="400">
+          width="300">
         </el-table-column>
         <el-table-column
           prop="createDate"
           label="创建时间"
-          width="400">
+          width="300">
         </el-table-column>
         <el-table-column
           prop="enabledStr"
@@ -49,7 +48,7 @@
           width="200">
         </el-table-column>
         <!-- 操作列 -->
-        <el-table-column label="操作">
+        <el-table-column label="操作" width="300">
           <template slot-scope="scope">
             <el-button
               size="mini"
@@ -89,7 +88,7 @@ export default {
   methods: {
     getPositions() {
       this.getRequest("/system/basic/position/").then(res => {
-        if (res.data != null) {
+        if (res.status === 200 && res.data != null && [] !== res.data) {
           this.tableData = [];
           for (let i = 0; i < res.data.length; i++) {
             let pos = {
@@ -115,54 +114,51 @@ export default {
         }
       })
     },
-    tableRowClassName({rowIndex}) {
-      if (!this.tableData[rowIndex].enabled) {
-        return 'warning-row';
-      } else if (this.tableData[rowIndex].enabled) {
-        return 'success-row';
-      }
-      return 'success-row';
-    },
     addPosition(position) {
-      if (position.name != null && '' !== position.name) {
+      if (position != null && '' !== position.name) {
         this.postRequest("/system/basic/position/", position).then(res => {
           if (res.data.status === 200) {
-            this.getPositions();
+            this.refreshPage();
           }
         })
       }
     },
     deletePosition(id) {
-      if (id !== null) {
+      if (id != null) {
         this.deleteRequest("/system/basic/position/" + id).then(res => {
           if (res.data.status === 200) {
-            this.getPositions();
+            this.refreshPage();
           }
         })
       }
     },
     enablePosition(position, enabled) {
-      let pos = {
-        id: position.id,
-        name: position.name,
-        createDate: null,
-        enabled: enabled
-      }
-      this.putRequest("/system/basic/position/", pos).then(res => {
-        if (res.data.status === 200) {
-          this.getPositions();
+      if (position != null && enabled != null) {
+        let pos = {
+          id: position.id,
+          name: position.name,
+          createDate: null,
+          enabled: enabled
         }
-      })
+        this.putRequest("/system/basic/position/", pos).then(res => {
+          if (res.data.status === 200) {
+            this.refreshPage();
+          }
+        })
+      }
     },
     deleteBatch(checkedArray) {
-      if (checkedArray != null && checkedArray !== []) {
+      if (checkedArray.length === 0) {
+        this.$message.info("没有需要删除的数据");
+      }
+      if (checkedArray.length > 0)  {
         let pIds = [];
         for (let i = 0; i < checkedArray.length; i++) {
             pIds.push(checkedArray[i].id);
         }
         this.deleteRequest("/system/basic/position/", pIds).then(res => {
           if (res.data.status === 200) {
-            this.getPositions();
+            this.refreshPage();
           }
         })
       }
@@ -188,10 +184,13 @@ export default {
     // 不可更改
     handleSelectionChange(val) {
       this.multipleSelection = val;
+    },
+    refreshPage() {
+      this.getPositions();
     }
   },
   mounted() {
-    this.getPositions();
+    this.refreshPage();
   }
 }
 
@@ -201,13 +200,5 @@ export default {
 .add-position-input {
   width: 300px;
   margin-right: 8px;
-}
-
-.el-table .warning-row {
-  background: oldlace;
-}
-
-.el-table .success-row {
-  background: #f0f9eb;
 }
 </style>
