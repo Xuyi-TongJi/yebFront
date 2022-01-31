@@ -7,7 +7,8 @@ export default new Vuex.Store({
     state: {
         routes: [],
         tokenStr: '',
-        levelTitleList: []
+        levelTitleList: [],
+        menuList: []
     },
     // 同步执行
     mutations: {
@@ -34,7 +35,15 @@ export default new Vuex.Store({
         },
         clearLevelTitleList(state) {
             state.levelTitleList = [];
-        }
+        },
+        setMenuList(state, list) {
+            if (list instanceof Array) {
+                state.menuList = list;
+            }
+        },
+        clearMenuList(state) {
+            state.menuList = [];
+        },
     },
     // 异步执行
     actions: {
