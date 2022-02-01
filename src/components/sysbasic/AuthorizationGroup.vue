@@ -17,15 +17,20 @@
         <el-card class="box-card">
           <div slot="header" class="clearfix">
             <span>{{ item.nameZh }}</span>
-            <el-button type="danger" icon="el-icon-delete" circle size="small" style="float: right;"
-                       @click="confirmDeleteRole(index)">
-            </el-button>
+            <div style="float: right;">
+              <el-button type="danger" icon="el-icon-delete" circle size="small"
+                         @click="confirmDeleteRole(index)">
+              </el-button>
+              <el-button type="primary" icon="el-icon-circle-plus" circle size="small"
+                         @click="openUpdateDialog(index)">
+              </el-button>
+            </div>
           </div>
           <el-card class="box-card-inner">
             <div slot="header" class="clearfix">
               <span>拥有权限</span>
               <el-button type="primary" icon="el-icon-plus" circle size="small" style="float: right;"
-                         @click="openEditDialog(index)">
+                         @click="openAddDialog(index)">
               </el-button>
             </div>
             <!-- 树形控件展示权限 -->
@@ -57,9 +62,9 @@
         <div><br/><br/></div>
       </div>
     </div>
-    <!-- 编辑界面对话框 -->
+    <!-- 新增编辑界面对话框 -->
     <div>
-      <el-dialog class="form-update-job-level" title="更新职称信息" :visible.sync="dialogVisible">
+      <el-dialog class="form-update-job-level" title="更新职称信息" :visible.sync="addDialogVisible">
         <el-form :model="roleEdit">
           <el-form-item label="角色英文名称" :label-width="formLabelWidth">
             <el-input class="input-update-role-menu" v-model="roleEdit.name" autocomplete="off" disabled></el-input>
@@ -73,8 +78,27 @@
           </el-form-item>
         </el-form>
         <div slot="footer" class="dialog-footer">
-          <el-button @click="dialogVisible = false">取 消</el-button>
-          <el-button type="primary" @click="addRoleMenu(roleEdit.id, roleEdit.mid)">更 新</el-button>
+          <el-button @click="addDialogVisible = false">取 消</el-button>
+          <el-button type="primary" @click="addRoleMenu(roleEdit.id, roleEdit.mid)">添 加</el-button>
+        </div>
+      </el-dialog>
+    </div>
+    <!-- 更新编辑界面对话框 -->
+    <div>
+      <el-dialog class="form-update-job-level" title="更新角色信息" :visible.sync="updateDialogVisible">
+        <el-form :model="roleUpdate">
+          <el-form-item label="角色英文名称" :label-width="formLabelWidth">
+            <el-input class="input-update-role-menu" v-model="roleUpdate.roleName" autocomplete="off">
+              <template slot="prepend">ROLE_</template>
+            </el-input>
+          </el-form-item>
+          <el-form-item label="角色中文名称" :label-width="formLabelWidth">
+            <el-input class="input-update-role-menu" v-model="roleUpdate.nameZh" autocomplete="off"></el-input>
+          </el-form-item>
+        </el-form>
+        <div slot="footer" class="dialog-footer">
+          <el-button @click="updateDialogVisible = false">取 消</el-button>
+          <el-button type="primary" @click="updateRole(roleUpdate)">更 新</el-button>
         </div>
       </el-dialog>
     </div>
@@ -82,6 +106,7 @@
 </template>
 
 <script>
+
 export default {
   name: "AuthorizationGroup",
   data() {
@@ -105,10 +130,19 @@ export default {
       },
       props: {
         label: 'name',
-        value: 'id'
+        value: 'id',
       },
-      dialogVisible: false,
-      formLabelWidth: '120px'
+      addDialogVisible: false,
+      formLabelWidth: '120px',
+      // 更新角色信息
+      updateDialogVisible: false,
+      roleUpdate: {
+        id: '',
+        name: '',
+        nameZh: '',
+        // name去掉前缀
+        roleName: ''
+      },
     }
   },
   methods: {
@@ -169,6 +203,19 @@ export default {
         }
       }
     },
+    updateRole(role) {
+      if (role != null) {
+        role.name = role.roleName;
+        if (this.validRole(role)) {
+          this.putRequest("/system/basic/permission/", role).then(res => {
+            if (res.data.status === 200) {
+              this.refreshPage();
+              this.updateDialogVisible = false;
+            }
+          })
+        }
+      }
+    },
     confirmDeleteRole(index) {
       this.$confirm('此操作将永久删除该角色, 是否继续?', '警告', {
         confirmButtonText: '确定',
@@ -196,7 +243,15 @@ export default {
         this.deleteMenu(rid, mid);
       })
     },
-    openEditDialog(index) {
+    openUpdateDialog(index) {
+      if (this.roleList[index] != null) {
+        this.roleUpdate.id = this.roleList[index].id;
+        this.roleUpdate.nameZh = this.roleList[index].nameZh;
+        this.roleUpdate.roleName = this.roleList[index].name.split("_")[1];
+        this.updateDialogVisible = true;
+      }
+    },
+    openAddDialog(index) {
       if (this.roleList[index] != null) {
         this.roleEdit = this.roleList[index];
         // 获取所有级联菜单
@@ -205,15 +260,53 @@ export default {
             if (res.data != null) {
               this.menuList = res.data;
               this.$store.commit("setMenuList", res.data);
+              // 初始化菜单
+              this.initMenuListDisabled(this.menuList);
+              this.initRoleMenuList(this.roleList[index].menus, this.menuList);
+              this.addDialogVisible = true;
             } else {
               this.$message.error("服务器无法响应菜单数据，请稍后再试");
-              this.dialogVisible = false;
+              this.addDialogVisible = false;
             }
           })
         } else {
           this.menuList = this.$store.state.menuList;
+          this.initMenuListDisabled(this.menuList);
+          this.initRoleMenuList(this.roleList[index].menus, this.menuList);
+          this.addDialogVisible = true;
         }
-        this.dialogVisible = true;
+      }
+    },
+    /**
+     * 初始化添加角色权限时可选择的菜单
+     * @param roleMenuList 菜单列表
+     * @param allMenuList 所有菜单
+     */
+    initRoleMenuList(roleMenuList, allMenuList) {
+      // 当前用户已经具有权限
+      if (roleMenuList != null && roleMenuList.length > 0) {
+        for (let i = 0; i < roleMenuList.length; i++) {
+          if (roleMenuList[i].children != null) {
+            // 非叶子节点
+            this.initRoleMenuList(roleMenuList[i].children, allMenuList[i].children);
+          } else {
+            // 叶子节点
+            allMenuList[i].disabled = true;
+          }
+        }
+      }
+    },
+    initMenuListDisabled(allMenuList) {
+      if (allMenuList != null) {
+        for (let i = 0; i < allMenuList.length; i++) {
+          if (allMenuList[i].children != null) {
+            // 非叶子节点
+            this.initMenuListDisabled(allMenuList[i].children);
+          } else {
+            // 叶子节点
+            allMenuList[i].disabled = false;
+          }
+        }
       }
     },
     addRoleMenu(rid, mid) {
@@ -223,7 +316,7 @@ export default {
         this.postRequest("/system/basic/permission/" + rid + "/" + midToAdd).then(res => {
           if (res.data.status === 200) {
             this.refreshPage();
-            this.dialogVisible = false;
+            this.addDialogVisible = false;
           }
         });
       } else {
@@ -232,6 +325,7 @@ export default {
     },
     refreshPage() {
       this.getRoleList();
+      this.role = {};
     },
   },
   mounted() {
