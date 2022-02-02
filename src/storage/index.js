@@ -1,5 +1,6 @@
 import Vue from "vue";
 import Vuex from 'vuex';
+import {enable} from "core-js/internals/internal-metadata";
 
 Vue.use(Vuex)
 
@@ -8,7 +9,8 @@ export default new Vuex.Store({
         routes: [],
         tokenStr: '',
         levelTitleList: [],
-        menuList: []
+        menuList: [],
+        adminList: []
     },
     // 同步执行
     mutations: {
@@ -44,6 +46,24 @@ export default new Vuex.Store({
         clearMenuList(state) {
             state.menuList = [];
         },
+        setAdminList(state, list) {
+            if (list instanceof Array) {
+                state.adminList = list;
+            }
+        },
+        setAdminListIndexUserFace(state, index, userFace) {
+            if (userFace != null) {
+                state.adminList[index].userFace = userFace;
+            }
+        },
+        setAdminListIndexEnabled(state, index, enabled) {
+            if (enable() != null) {
+                state.adminList[index].enabled = enabled;
+            }
+        },
+        clearAdminList(state) {
+            state.adminList = [];
+        }
     },
     // 异步执行
     actions: {

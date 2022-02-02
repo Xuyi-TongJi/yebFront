@@ -32,7 +32,7 @@ export default {
   components: {DepartmentManagement, JobLevelManagement, PositionManagement, RewardsAndPunishment, AuthorizationGroup},
   data() {
     return {
-      activeName: 'AuthorizationGroup'
+      activeName: 'DepartmentManagement'
     }
   }
 }

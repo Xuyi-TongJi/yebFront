@@ -21,7 +21,7 @@
               <el-button type="danger" icon="el-icon-delete" circle size="small"
                          @click="confirmDeleteRole(index)">
               </el-button>
-              <el-button type="primary" icon="el-icon-circle-plus" circle size="small"
+              <el-button type="primary" icon="el-icon-edit" circle size="small"
                          @click="openUpdateDialog(index)">
               </el-button>
             </div>
@@ -133,7 +133,7 @@ export default {
         value: 'id',
       },
       addDialogVisible: false,
-      formLabelWidth: '120px',
+      formLabelWidth: '80px',
       // 更新角色信息
       updateDialogVisible: false,
       roleUpdate: {
@@ -340,8 +340,11 @@ export default {
 }
 
 .role-menu-view {
-  margin-left: 210px;
+  margin-left: 30px;
   margin-top: 30px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-around;
 }
 
 .add-role-input {
@@ -368,11 +371,11 @@ export default {
 }
 
 .box-card {
-  width: 700px;
+  width: 400px;
 }
 
 .box-card-inner {
-  width: 600px;
+  width: 300px;
 }
 
 .custom-tree-node {
@@ -382,5 +385,14 @@ export default {
   justify-content: space-between;
   font-size: 14px;
   padding-right: 8px;
+}
+
+.input-update-role-menu {
+  width: 200px;
+}
+
+.form-update-job-level {
+  width: 800px;
+  margin-left: 500px;
 }
 </style>
